@@ -1,0 +1,42 @@
+name: Trigger auto deployment for krmittaaca02
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '**'
+    - '.github/workflows/krmittaaca02-AutoDeployTrigger-07c21cca-f157-4f36-a49a-6394963b34fa.yml'
+
+  # Allow mannually trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.KRMITTAACA02_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: krmittaacr01.azurecr.io
+          registryUsername: ${{ secrets.KRMITTAACA02_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.KRMITTAACA02_REGISTRY_PASSWORD }}
+          containerAppName: krmittaaca02
+          resourceGroup: djangoTrial01
+          imageToBuild: krmittaacr01.azurecr.io/krmittaaca02:${{ github.sha }}
+          
+
+     
+
